@@ -16,12 +16,11 @@ void sinx_taylor(int num_elements, int terms, double* x, double* result) {
 	// result: 결과값을 저장할 배열 (포인터)
 	
 	for(int i=0; i<num_elements; i++) {
-		int fd[2], length, n;
+		int fd[2], length, n, pid;
 		char message[MAXLINE], line[MAXLINE];
-		pid_t pid = fork(); // 자식 프로세스 생성
 		pipe(fd);
 		
-		if (pid == 0) {
+		if ((pid = fork()) == 0) {
 			close(fd[0]);
 			double value = x[i]; // 초기값으로 x[i]를 설정
 
@@ -44,16 +43,15 @@ void sinx_taylor(int num_elements, int terms, double* x, double* result) {
 			}
 
 			// 계산된 값 저장
+			close(fd[0]);
 			sprintf(message, "%f", value); // 문자열로 변환 및 저장
 			length = strlen(message) + 1; // 변환된 문자열 길이 저장
 			write(fd[1], message, length); // 값 전달
-			close(fd[1]); // 파이프 닫기
 			_exit(0);
 		} else {
 			close(fd[1]); // 부모는 쓰지 않음
-        		n = read(fd[0], line, MAXLINE);
+            n = read(fd[0], line, MAXLINE);
 			result[i] = atof(line);
-			close(fd[0]); // 파이프 닫기
 		}
 	}
 	
