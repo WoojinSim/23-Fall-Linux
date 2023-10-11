@@ -44,7 +44,7 @@ void sinx_taylor(int num_elements, int terms, double* x, double* result) {
 
 			// 계산된 값 저장
 			close(fd[0]); // 자식 프로세스는 읽어지 않음
-			write(fd[1], &value, sizeof(double)); // 값 전달
+			write(fd[1], &value, sizeof(double)); // 값 전달 (문자열 변환X)
 			_exit(0);
 			close(fd[1]);
 		} else {
