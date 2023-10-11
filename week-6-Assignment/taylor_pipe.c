@@ -43,19 +43,20 @@ void sinx_taylor(int num_elements, int terms, double* x, double* result) {
 			}
 
 			// 계산된 값 저장
-			close(fd[0]);
-			sprintf(message, "%f", value); // 문자열로 변환 및 저장
-			length = strlen(message) + 1; // 변환된 문자열 길이 저장
-			write(fd[1], message, length); // 값 전달
+			close(fd[0]); // 자식 프로세스는 읽어지 않음
+			write(fd[1], &value, sizeof(double)); // 값 전달
 			_exit(0);
+			close(fd[1]);
 		} else {
-			close(fd[1]); // 부모는 쓰지 않음
-            n = read(fd[0], line, MAXLINE);
-			result[i] = atof(line);
+			close(fd[1]); // 부모 프로세스는 쓰지 않음
+			double receivedValue;
+            		n = read(fd[0], &receivedValue, sizeof(double)); // 값 받기
+			result[i] = receivedValue;
+			close(fd[1]);
 		}
 	}
 	
-	for(int i=0; i<num_elements; i++) {
+	for(int i = 0; i < num_elements; i++) {
 		wait(NULL);
 	}
 }
@@ -65,7 +66,7 @@ int main() {
 	double res[N];
 	
 	sinx_taylor(N, 3, x, res);
-	for(int i=0; i<N; i++) {
+	for(int i = 0; i < N; i++) {
 		printf("sin(%.2f) by Taylor series = %f\n", x[i], res[i]);
 		printf("sin(%.2f) = %f\n", x[i], sin(x[i]));
 	}
